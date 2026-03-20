@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Défi Quotidien</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #111;
+    --border: #1e1e1e;
+    --accent: #e8ff47;
+    --text: #f0f0f0;
+    --muted: #444;
+    --green: #a8ff78;
+    --blue: #47c8ff;
+    --orange: #ff6b35;
+    --pink: #ff47a3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 36px 16px 80px;
+  }
+
+  header { margin-bottom: 32px; }
+
+  .header-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 68px;
+    font-weight: 900;
+    line-height: 0.85;
+    text-transform: uppercase;
+  }
+
+  h1 span { color: var(--accent); display: block; }
+
+  .header-sub {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* PROGRESS RING AREA */
+  .progress-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--card);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .ring-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+
+  .ring-wrap svg { transform: rotate(-90deg); }
+
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+
+  .ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 188;
+    stroke-dashoffset: 188;
+    transition: stroke-dashoffset 0.4s ease;
+  }
+
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .progress-info { flex: 1; }
+
+  .progress-info .done-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .progress-info .done-count span {
+    font-size: 22px;
+    color: var(--muted);
+  }
+
+  .progress-info .done-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* CHALLENGE CARDS */
+  .challenges { display: flex; flex-direction: column; gap: 3px; }
+
+  .challenge-card {
+    background: var(--card);
+    border-left: 3px solid var(--accent);
+    padding: 18px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .challenge-card[data-color="orange"] { border-left-color: var(--orange); }
+  .challenge-card[data-color="blue"]   { border-left-color: var(--blue); }
+  .challenge-card[data-color="green"]  { border-left-color: var(--green); }
+  .challenge-card[data-color="pink"]   { border-left-color: var(--pink); }
+  .challenge-card[data-color="accent"] { border-left-color: var(--accent); }
+
+  /* fill bar */
+  .challenge-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--fill, 0%);
+    background: rgba(255,255,255,0.02);
+    transition: width 0.3s ease;
+    pointer-events: none;
+  }
+
+  .ch-icon { font-size: 26px; flex-shrink: 0; }
+
+  .ch-body { flex: 1; min-width: 0; }
+
+  .ch-name {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .ch-detail {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* mini progress bar inside card */
+  .ch-bar-wrap {
+    margin-top: 8px;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .ch-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .challenge-card[data-color="orange"] .ch-bar { background: var(--orange); }
+  .challenge-card[data-color="blue"]   .ch-bar { background: var(--blue); }
+  .challenge-card[data-color="green"]  .ch-bar { background: var(--green); }
+  .challenge-card[data-color="pink"]   .ch-bar { background: var(--pink); }
+  .challenge-card[data-color="accent"] .ch-bar { background: var(--accent); }
+
+  .ch-right { flex-shrink: 0; text-align: right; }
+
+  .ch-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .challenge-card[data-color="orange"] .ch-count { color: var(--orange); }
+  .challenge-card[data-color="blue"]   .ch-count { color: var(--blue); }
+  .challenge-card[data-color="green"]  .ch-count { color: var(--green); }
+  .challenge-card[data-color="pink"]   .ch-count { color: var(--pink); }
+  .challenge-card[data-color="accent"] .ch-count { color: var(--accent); }
+
+  .ch-target {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* BUTTONS sous chaque card */
+  .ch-btns {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+  }
+
+  .ch-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    background: #1a1a1a;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 0;
+  }
+
+  .ch-btn:active { background: #252525; }
+
+  .ch-btn.primary {
+    background: #1c1c14;
+    color: var(--accent);
+    font-size: 18px;
+  }
+
+  .ch-btn.primary:active { background: #252510; }
+
+  .ch-btn.minus { color: #333; }
+
+  /* DONE badge */
+  .done-badge {
+    display: none;
+    position: absolute;
+    top: 10px; right: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(232,255,71,0.08);
+    padding: 2px 8px;
+  }
+
+  .challenge-card.completed .done-badge { display: block; }
+  .challenge-card.completed { opacity: 0.5; }
+
+  /* RESET */
+  .reset-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:active { background: var(--card); color: var(--text); }
+
+  @keyframes pop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .pop { animation: pop 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-label">Défi du jour</div>
+    <h1>Daily<span>Grind</span></h1>
+    <div class="header-sub">Fais-le quand tu veux — mais fais-le.</div>
+  </header>
+
+  <div class="progress-section">
+    <div class="ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle class="ring-bg" cx="36" cy="36" r="30"/>
+        <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="30"/>
+      </svg>
+      <div class="ring-text" id="ringPct">0%</div>
+    </div>
+    <div class="progress-info">
+      <div class="done-count"><span id="totalDone">0</span> <span>/ <span id="totalTarget">0</span></span></div>
+      <div class="done-label">reps complétées aujourd'hui</div>
+    </div>
+  </div>
+
+  <div class="challenges" id="challenges"></div>
+
+  <button class="reset-btn" id="resetBtn">↺ Réinitialiser la journée</button>
+
+</div>
+
+<script>
+const challenges = [
+  { icon: "💪", name: "Pompes",           detail: "Prise large — poitrine au sol",          target: 100, step: 10, color: "orange" },
+  { icon: "🦵", name: "Squats",           detail: "Sous les 90°, talon au sol, tempo lent",  target: 100, step: 10, color: "accent" },
+  { icon: "🔥", name: "Fentes",           detail: "Alternées — genou arrière proche du sol",  target: 60,  step: 10, color: "green"  },
+  { icon: "⚡", name: "Abdos",            detail: "Crunchs ou relevé de jambes",              target: 60,  step: 10, color: "blue"   },
+  { icon: "🎯", name: "Gainage (sec)",    detail: "Planche — corps droit, respire",           target: 180, step: 30, color: "pink"   },
+];
+
+const totalTarget = challenges.reduce((a, c) => a + c.target, 0);
+document.getElementById('totalTarget').textContent = totalTarget;
+
+const state = challenges.map(c => ({ done: 0 }));
+
+function updateGlobal() {
+  const total = state.reduce((a, s) => a + s.done, 0);
+  const pct = Math.round((total / totalTarget) * 100);
+  document.getElementById('totalDone').textContent = total;
+  document.getElementById('ringPct').textContent = pct + '%';
+  const offset = 188 - (188 * pct / 100);
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+}
+
+const container = document.getElementById('challenges');
+
+challenges.forEach((ch, i) => {
+  // Card
+  const card = document.createElement('div');
+  card.className = 'challenge-card';
+  card.dataset.color = ch.color;
+
+  card.innerHTML = `
+    <div class="ch-icon">${ch.icon}</div>
+    <div class="ch-body">
+      <div class="ch-name">${ch.name}</div>
+      <div class="ch-detail">${ch.detail}</div>
+      <div class="ch-bar-wrap"><div class="ch-bar" id="bar-${i}"></div></div>
+    </div>
+    <div class="ch-right">
+      <div class="ch-count" id="count-${i}">0</div>
+      <div class="ch-target">/ ${ch.target}${ch.name === 'Gainage (sec)' ? ' sec' : ' reps'}</div>
+    </div>
+    <div class="done-badge">✓ Done</div>
+  `;
+
+  // Buttons row
+  const btns = document.createElement('div');
+  btns.className = 'ch-btns';
+
+  const minus = document.createElement('button');
+  minus.className = 'ch-btn minus';
+  minus.textContent = `−${ch.step}`;
+
+  const plus = document.createElement('button');
+  plus.className = 'ch-btn primary';
+  plus.textContent = `+${ch.step}`;
+
+  function updateCard() {
+    const s = state[i];
+    const pct = Math.min(s.done / ch.target * 100, 100);
+    document.getElementById(`count-${i}`).textContent = s.done;
+    document.getElementById(`bar-${i}`).style.width = pct + '%';
+    card.style.setProperty('--fill', pct + '%');
+    if (s.done >= ch.target) {
+      card.classList.add('completed');
+    } else {
+      card.classList.remove('completed');
+    }
+    updateGlobal();
+  }
+
+  plus.addEventListener('click', () => {
+    state[i].done = Math.min(state[i].done + ch.step, ch.target);
+    const el = document.getElementById(`count-${i}`);
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+    updateCard();
+  });
+
+  minus.addEventListener('click', () => {
+    state[i].done = Math.max(state[i].done - ch.step, 0);
+    updateCard();
+  });
+
+  btns.appendChild(minus);
+  btns.appendChild(plus);
+
+  container.appendChild(card);
+  container.appendChild(btns);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state.forEach(s => s.done = 0);
+  challenges.forEach((_, i) => {
+    document.getElementById(`count-${i}`).textContent = 0;
+    document.getElementById(`bar-${i}`).style.width = '0%';
+    document.querySelectorAll('.challenge-card')[i].classList.remove('completed');
+    document.querySelectorAll('.challenge-card')[i].style.setProperty('--fill', '0%');
+  });
+  updateGlobal();
+});
+
+updateGlobal();
+</script>
+</body>
+</html>
